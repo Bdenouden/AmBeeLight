@@ -85,10 +85,9 @@
                                     <map>
                                       <entry key="backgroundImage" value="C:\Users\bramd\Desktop\AmBeeLight\logo2\transparant background.png" />
                                       <entry key="backgroundLayerName" value="ic_launcher_background" />
-                                      <entry key="foregroundImage" value="C:\Users\bramd\Desktop\AmBeeLight\logo2\AmBeeLight_glow.png" />
+                                      <entry key="foregroundImage" value="C:\Users\bramd\Desktop\AmBeeLight\logo4\ambeelight.png" />
                                       <entry key="foregroundLayerName" value="ic_launcher_foreground" />
-                                      <entry key="legacyIconShape" value="NONE" />
-                                      <entry key="outputName" value="ic_launcherv2" />
+                                      <entry key="outputName" value="ic_launcherv4" />
                                     </map>
                                   </option>
                                 </PersistentState>
