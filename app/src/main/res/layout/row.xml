@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp">
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="32sp"-->
+        <!--android:gravity="center"-->
+        <!--android:id="@+id/target"-->
+        <!--android:onClick="onIpClick"-->
+        <!--android:clickable="true"-->
+        <!--android:focusable="true" />-->
+        <Button
+            android:id="@+id/target"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="28sp"
+            android:onClick="onIpClick"/>
+        <!--<CheckBox-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/target"-->
+            <!--android:textSize="32sp"-->
+            <!--android:gravity="center"-->
+            <!--android:button="@null"-->
+            <!--android:focusable="false"-->
+            <!--android:drawableRight="?android:attr/listChoiceIndicatorMultiple"-->
+            <!--android:drawableEnd="?android:attr/listChoiceIndicatorMultiple" />-->
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

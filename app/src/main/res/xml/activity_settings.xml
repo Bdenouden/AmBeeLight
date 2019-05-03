@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="raveToggle"
+        android:summary="Click to switch on or off"
+        android:title="Rave seekbar enabled"
+        android:defaultValue="false"/>
+    <SwitchPreference
+        android:key="stroboToggle"
+        android:summary="Click to switch on or off"
+        android:title="Strobo seekbar enabled"
+        android:defaultValue="false"/>
+
+    <Preference
+        android:title="Networks scanner"
+        android:summary="Click to start the networks scanner in order to find available AmBeelights">
+        <intent
+            android:action=         "com.example.bramd.ambeelight.SETTING_START_ACTIVITY"
+            android:targetClass=    "com.example.bramd.ambeelight.networkScan"
+            android:targetPackage=  "com.example.bramd.ambeelight"/>
+    </Preference>
+</PreferenceScreen>
