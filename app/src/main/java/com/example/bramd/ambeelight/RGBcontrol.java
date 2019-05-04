@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -72,10 +74,7 @@ public class RGBcontrol extends AppCompatActivity {
         SBgreen.setMax(255);
         SBblue.setMax(255);
 
-//        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-//        final NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-//        Log.i("NETWORKINFO","wifi.isConnected = " + mWifi.isConnected());
-        wifiCheck();    //TODO toggle voor wificheck invoegen
+        //wifiCheck();
 
         //off button
         offBtn.setOnClickListener(new View.OnClickListener(){
@@ -91,7 +90,7 @@ public class RGBcontrol extends AppCompatActivity {
                 //wifi check and sending data
                 if(wifiCheck()){
                     messageSender.execute();
-                    Snackbar.make(v,"Data send to AmBeeLight!" , Snackbar.LENGTH_LONG)
+                    Snackbar.make(v,("Data send to AmBeeLight! @"+senderParams.targetIp ), Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
                 else {//and me
@@ -175,11 +174,21 @@ public class RGBcontrol extends AppCompatActivity {
         });
     }
 
-    Boolean wifiCheck(){
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        Log.i("NETWORKINFO","wifi.isConnected = " + mWifi.isConnected());
-        return mWifi.isConnected();
+    private boolean wifiCheck() {
+        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+
+            if( wifiInfo.getNetworkId() == -1 ){
+                return false; // Not connected to an access point
+            }
+            return true; // Connected to an access point
+        }
+        else {
+            return false; // Wi-Fi adapter is OFF
+        }
     }
 
     public static void showSnackbar(String message, int length) {
