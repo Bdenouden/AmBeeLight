@@ -13,7 +13,7 @@
         android:defaultValue="false"/>
 
     <Preference
-        android:title="Networks scanner"
+        android:title="Network scanner"
         android:summary="Click to start the networks scanner in order to find available AmBeelights">
         <intent
             android:action=         "com.example.bramd.ambeelight.SETTING_START_ACTIVITY"

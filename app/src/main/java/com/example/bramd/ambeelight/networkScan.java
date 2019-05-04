@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 
 public class networkScan extends AppCompatActivity {
     private Button scanBtn;
-    public String ipAddress;
+    public int ipAddress;
     public ArrayList<String> addresses;
     private ProgressBar progressBar;
     private ProgressBar progressBar_Bottom;
@@ -66,9 +67,11 @@ public class networkScan extends AppCompatActivity {
         scanBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-                ipAddress =Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-                new portCheck().execute(ipAddress);
+                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                WifiInfo wifiInfo = wm.getConnectionInfo();
+                ipAddress = wifiInfo.getIpAddress();
+                new portCheck().execute(Formatter.formatIpAddress(ipAddress));
+                Log.i("Network Info", "My IP address is: "+Formatter.formatIpAddress(ipAddress));
             }
         });
     }
@@ -76,7 +79,7 @@ public class networkScan extends AppCompatActivity {
     Boolean wifiCheck(){
         ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        Log.i("NETWORKINFO","wifi.isConnected = " + mWifi.isConnected());
+        Log.i("NETWORK INFO","wifi.isConnected = " + mWifi.isConnected());
         return mWifi.isConnected();
     }
 
@@ -178,7 +181,7 @@ public class networkScan extends AppCompatActivity {
 
         protected Void doInBackground(String...hostAddress){     //check all available ip addresses for open port 55056
             if(isCancelled()){return null;}
-            String ipBase = hostAddress[0].substring(0,12);
+            String ipBase = hostAddress[0].substring(0,hostAddress[0].lastIndexOf(".")+1);     //todo dit gaat stuk op IP adressen zoals 192.168.4.1 ipv 192.168.200.1
             Log.i("NetworkScan","Hostaddress = "+hostAddress[0]);
             Log.i("NetworkScan","IpBase = "+ipBase);
             for(int i=0;i<255;i++) {

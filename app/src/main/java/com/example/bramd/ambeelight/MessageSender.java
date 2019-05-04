@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -16,6 +17,7 @@ public class MessageSender extends AsyncTask<senderParams ,Void ,Void>
     protected Void doInBackground(senderParams... params){
 
         byte[] message = senderParams.colordata;
+
         String targetIp = senderParams.targetIp;
         Log.i("Message sender","Target ip = " + targetIp);
         //RGBcontrol.showSnackbar("Target ip = "+ targetIp,Snackbar.LENGTH_LONG);
@@ -24,9 +26,12 @@ public class MessageSender extends AsyncTask<senderParams ,Void ,Void>
         {
             Socket s = new Socket(targetIp, 55056);
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            DataInputStream  din = new DataInputStream(s.getInputStream());
             dos.write(message);
-            dos.close();
             dos.flush();
+            dos.close();
+            din.close();
+            s.close();
             Log.i("Message sender", "Succesfully send to AmBeeLight!");
         }catch (IOException e)
         {
