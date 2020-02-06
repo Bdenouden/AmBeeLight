@@ -12,10 +12,10 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 
-public class MessageSender extends AsyncTask<senderParams ,Void ,Void>
+public class MessageSender extends AsyncTask<byte[] ,Void ,Void>
 {
-    Socket s = new Socket();
-    protected Void doInBackground(senderParams... params){
+    private Socket s = new Socket();
+    protected Void doInBackground(byte[]... params){
 
         byte[] message = senderParams.colordata;
 
@@ -35,7 +35,7 @@ public class MessageSender extends AsyncTask<senderParams ,Void ,Void>
         {
             e.printStackTrace();
             Log.i("Message sender", "Could not send to AmBeeLight!");
-            RGBcontrol.showSnackbar("Could not send to AmBeeLight!", Snackbar.LENGTH_LONG);
+//            RGBcontrol.showSnackbar("Could not send to AmBeeLight!", Snackbar.LENGTH_LONG);
         }
         return null;
     }

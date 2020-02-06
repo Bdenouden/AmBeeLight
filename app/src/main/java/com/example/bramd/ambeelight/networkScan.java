@@ -138,7 +138,7 @@ public class networkScan extends AppCompatActivity {
                 MessageSender messageSender = new MessageSender();
                 senderParams.colordata= new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0x00, (byte) 0x00};
                 messageSender.execute();
-                RGBcontrol.showSnackbar("AmBeeLight found!",Snackbar.LENGTH_SHORT);
+//                RGBcontrol.showSnackbar("AmBeeLight found!",Snackbar.LENGTH_SHORT);
                 //finishing this activity will redirect to it's parent, in this case the settings page
                 finish();
 
