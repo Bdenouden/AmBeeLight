@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,9 +44,11 @@ public class RGBcontrol extends AppCompatActivity {
     private TextView GText;
     private TextView BText;
     private ImageView colorShow;
+    private ProgressBar sendProgressBar;
+    private FloatingActionButton FAB;
 
 
-    SharedPreferences prefs; //todo shared prefs from menu
+//    SharedPreferences prefs; //todo shared prefs from menu
 
 
     @Override
@@ -61,6 +65,8 @@ public class RGBcontrol extends AppCompatActivity {
         SBgreen = findViewById(R.id.SBgreen);
         SBblue = findViewById(R.id.SBblue);
         colorShow = findViewById(R.id.colorShow);
+        sendProgressBar = findViewById(R.id.send_progress_bar);
+        FAB = findViewById(R.id.fab);
 
 //        anchor = this.findViewById(R.id.anchor); //must be declared before getIP() is called!!!
         SBred.setMax(255);
@@ -133,7 +139,7 @@ public class RGBcontrol extends AppCompatActivity {
     }
 
     public void sendCurrentSBValues(View v) {
-        Toast.makeText(this, "sending....", Toast.LENGTH_SHORT);
+//        Toast.makeText(this, "sending....", Toast.LENGTH_SHORT);
         byte[] message = {(byte) 0x43, (byte) SBred.getProgress(), (byte) SBgreen.getProgress(), (byte) SBblue.getProgress()};
 
         if (wifiCheck()) {
@@ -151,25 +157,13 @@ public class RGBcontrol extends AppCompatActivity {
         WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
-
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
-
-            if (wifiInfo.getNetworkId() == -1) {
-                return false; // Not connected to an access point
-            }
-            return true; // Connected to an access point
+            return wifiInfo.getNetworkId() != -1; // return false if not connected to an access point
         } else {
             return false; // Wi-Fi adapter is OFF
         }
     }
-
-//    public static void showSnackbar(String message, int length) {
-//        Snackbar.make(anchor, message, length)
-//                .setAction("action", null)
-//                .show();
-//    }
-
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -198,11 +192,11 @@ public class RGBcontrol extends AppCompatActivity {
     }
 
 
-    private void setIpAddress(String ipAddress) {
+    private void setIpAddress(String ipAddress) { // todo move to networkscanner
         SharedPreferences prefs = getSharedPreferences("data", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(IP_ADDRESS, ipAddress);
-        editor.commit();
+        editor.apply();
     }
 
     private static class BasicSender extends AsyncTask<byte[], Integer, Boolean> {
@@ -225,7 +219,13 @@ public class RGBcontrol extends AppCompatActivity {
 //            SharedPreferences prefs = activity.getSharedPreferences("data", MODE_PRIVATE);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
-            ipAddress = prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT).replaceAll(" ","");
+            activity.sendProgressBar.setVisibility(View.VISIBLE);
+            activity.FAB.hide();
+
+            ipAddress = prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT);
+            if(ipAddress != null){
+                ipAddress = ipAddress.replaceAll(" ","");
+            }
         }
 
         @Override
@@ -247,15 +247,15 @@ public class RGBcontrol extends AppCompatActivity {
             return Boolean.TRUE;
         }
 
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-
-            RGBcontrol activity = activityWeakReference.get();
-            if (activity == null || activity.isFinishing()) {
-                return;
-            }
-        }
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//            super.onProgressUpdate(values);
+//
+//            RGBcontrol activity = activityWeakReference.get();
+//            if (activity == null || activity.isFinishing()) {
+//                return;
+//            }
+//        }
 
         @Override
         protected void onPostExecute(Boolean bool) {
@@ -270,6 +270,10 @@ public class RGBcontrol extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) {
                 return;
             }
+            activity.sendProgressBar.setVisibility(View.INVISIBLE);
+            activity.FAB.show();
+
+
             if (bool) {
                 Toast.makeText(activity, "Send to ambeelight", Toast.LENGTH_SHORT).show();
             } else {
