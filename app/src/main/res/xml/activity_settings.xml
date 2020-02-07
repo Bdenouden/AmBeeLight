@@ -11,7 +11,16 @@
         android:summary="Click to switch on or off"
         android:title="Strobo seekbar enabled"
         android:defaultValue="false"/>
-
+    <EditTextPreference
+        android:defaultValue="@string/pref_ip_address_default_value"
+        android:key="@string/pref_ip_address"
+        android:selectAllOnFocus="true"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:title="Enter you IP address here"
+        android:digits="1234567890."
+        android:inputType="number"
+        />
     <Preference
         android:title="Network scanner"
         android:summary="Click to start the networks scanner in order to find available AmBeelights">
@@ -20,4 +29,5 @@
             android:targetClass=    "com.example.bramd.ambeelight.networkScan"
             android:targetPackage=  "com.example.bramd.ambeelight"/>
     </Preference>
+
 </PreferenceScreen>

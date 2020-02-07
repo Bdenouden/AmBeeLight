@@ -9,6 +9,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -21,12 +22,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -34,7 +31,10 @@ import java.util.Arrays;
 import java.util.logging.SocketHandler;
 
 public class RGBcontrol extends AppCompatActivity {
-//    private static View anchor;
+
+    public static final String IP_ADDRESS = "ipAddress";
+    public static final String IP_ADDRESS_DEFAULT = "192.168.4.1";
+
     private SeekBar SBred;
     private SeekBar SBgreen;
     private SeekBar SBblue;
@@ -197,37 +197,11 @@ public class RGBcontrol extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    void getIp() {
-        Log.i("PING!", "getIP PING");
-        try {
-            FileInputStream fileInputStream = openFileInput("targetIp_file");
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuilder stringBuffer = new StringBuilder();
-
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuffer.append(line);
-            }
-            Log.i("FILE", "targetIp = " + stringBuffer.toString());
-            senderParams.targetIp = stringBuffer.toString();
-            Log.i("FILE", "targetIp = " + senderParams.targetIp);
-        } catch (FileNotFoundException e) {
-            Log.e("FILE", "FILE NOT FOUND");
-            senderParams.targetIp = "192.168.1.0";   //fallback IP to prevent error
-//            showSnackbar("Please go to settings first!", Snackbar.LENGTH_INDEFINITE);
-        } catch (Exception e) {
-            Log.e("FILE", "no valid ip loaded from memory");
-            senderParams.targetIp = "192.168.1.0";   //fallback IP to prevent error
-//            showSnackbar("Something went wrong, please tell Bram!", Snackbar.LENGTH_INDEFINITE);
-        }
-    }
 
     private void setIpAddress(String ipAddress) {
         SharedPreferences prefs = getSharedPreferences("data", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("ipAddress", ipAddress);
+        editor.putString(IP_ADDRESS, ipAddress);
         editor.commit();
     }
 
@@ -248,8 +222,13 @@ public class RGBcontrol extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) {
                 return;
             }
-            SharedPreferences prefs = activity.getSharedPreferences("data", MODE_PRIVATE);
-            ipAddress = prefs.getString("ipAddress", "192.168.4.1");
+//            SharedPreferences prefs = activity.getSharedPreferences("data", MODE_PRIVATE);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+
+            ipAddress = prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT).replaceAll(" ","");
+//            if (ipAddress != null) {
+//                ipAddress = ipAddress.trim(); // remove trailing or leading spaces
+//            }
         }
 
         @Override
@@ -297,7 +276,7 @@ public class RGBcontrol extends AppCompatActivity {
             if (bool) {
                 Toast.makeText(activity, "Send to ambeelight", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(activity, "Could not send :( ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Could not send to " + ipAddress, Toast.LENGTH_SHORT).show();
             }
         }
     }
