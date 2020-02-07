@@ -37,8 +37,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         myPrefListner = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                EditTextPreference setIpTextPref = (EditTextPreference) findPreference(key);
-                setIpTextPref.setSummary(prefs.getString(key, "no value set"));
+                if (findPreference(key) instanceof EditTextPreference) {
+                    EditTextPreference setIpTextPref = (EditTextPreference) findPreference(key);
+                    setIpTextPref.setSummary(prefs.getString(key, "no value set"));
+                }
             }
         };
 
@@ -54,7 +56,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         // re attach listener to editable fields
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(myPrefListner);
     }
-
 
 
     @Override
