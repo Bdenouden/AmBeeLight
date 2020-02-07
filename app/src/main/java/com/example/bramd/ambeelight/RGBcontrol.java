@@ -226,9 +226,6 @@ public class RGBcontrol extends AppCompatActivity {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
             ipAddress = prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT).replaceAll(" ","");
-//            if (ipAddress != null) {
-//                ipAddress = ipAddress.trim(); // remove trailing or leading spaces
-//            }
         }
 
         @Override

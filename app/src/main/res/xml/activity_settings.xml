@@ -17,9 +17,9 @@
         android:selectAllOnFocus="true"
         android:maxLines="1"
         android:singleLine="true"
-        android:title="Enter you IP address here"
+        android:title="Manually set Ambeelight ip"
         android:digits="1234567890."
-        android:inputType="number"
+        android:inputType="phone"
         />
     <Preference
         android:title="Network scanner"
