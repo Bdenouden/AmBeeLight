@@ -163,7 +163,7 @@ public class RGBcontrol extends AppCompatActivity {
             return false; // Wi-Fi adapter is OFF
         }
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -192,17 +192,16 @@ public class RGBcontrol extends AppCompatActivity {
     }
 
 
-    private void setIpAddress(String ipAddress) { // todo move to networkscanner
-        SharedPreferences prefs = getSharedPreferences("data", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(IP_ADDRESS, ipAddress);
-        editor.apply();
+    private static class ReturnParams{
+        private boolean success;
+        private IOException error = null;
     }
 
-    private static class BasicSender extends AsyncTask<byte[], Integer, Boolean> {
+    private static class BasicSender extends AsyncTask<byte[], Integer, ReturnParams> {
         private WeakReference<RGBcontrol> activityWeakReference;
         private String ipAddress = "";
         private Socket s = new Socket();
+
 
         BasicSender(RGBcontrol activity) {
             activityWeakReference = new WeakReference<>(activity);
@@ -216,7 +215,6 @@ public class RGBcontrol extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) {
                 return;
             }
-//            SharedPreferences prefs = activity.getSharedPreferences("data", MODE_PRIVATE);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
             activity.sendProgressBar.setVisibility(View.VISIBLE);
@@ -229,22 +227,30 @@ public class RGBcontrol extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(byte[]... bytes) {
+        protected ReturnParams doInBackground(byte[]... bytes) {
             byte[] message = bytes[0];
             Log.i("Basic Sender", "Target ip = " + ipAddress);
             Log.i("Basic sender", "Message = " + Arrays.toString(message));
             try {
-                s.connect(new InetSocketAddress(ipAddress, 55056), 30);
+                s.connect(new InetSocketAddress(ipAddress, 55056), 1000);
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                 dos.write(message);
+                s.close();
                 Log.i("Basic sender", "Successfully send to AmBeeLight!");
             } catch (IOException e) {
 //                e.printStackTrace();
                 Log.i("Basic sender", "Could not send to AmBeeLight!");
-                return Boolean.FALSE;
+
+                ReturnParams returnParams = new ReturnParams();
+                returnParams.success = Boolean.FALSE;
+                returnParams.error = e;
+                return returnParams;
             }
 
-            return Boolean.TRUE;
+            ReturnParams returnParams = new ReturnParams();
+            returnParams.success = Boolean.TRUE;
+
+            return returnParams;
         }
 
 //        @Override
@@ -258,8 +264,8 @@ public class RGBcontrol extends AppCompatActivity {
 //        }
 
         @Override
-        protected void onPostExecute(Boolean bool) {
-            super.onPostExecute(bool);
+        protected void onPostExecute(ReturnParams ret) {
+            super.onPostExecute(ret);
             try {
                 s.close();
             } catch (IOException e) {
@@ -274,10 +280,17 @@ public class RGBcontrol extends AppCompatActivity {
             activity.FAB.show();
 
 
-            if (bool) {
+            if (ret.success) {
                 Toast.makeText(activity, "Send to ambeelight", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(activity, "Could not send to " + ipAddress, Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Could not send to " + ipAddress + " Last error can be found under 'info'", Toast.LENGTH_LONG).show();
+
+                // set last exception info_last_exception
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("info_last_exception", ret.error.toString());
+                editor.apply();
+
             }
         }
     }
