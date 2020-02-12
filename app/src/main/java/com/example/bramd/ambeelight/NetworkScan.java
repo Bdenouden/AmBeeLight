@@ -109,21 +109,22 @@ public class NetworkScan extends AppCompatActivity {
         }
     }
 
-    private void fadeOutAndHideImage(final ImageView img)
-    {
+    private void fadeOutAndHideImage(final ImageView img) {
         Animation fadeOut = new AlphaAnimation(1, 0);
         fadeOut.setInterpolator(new AccelerateInterpolator());
         fadeOut.setStartOffset(1000);
         fadeOut.setDuration(1000);
 
-        fadeOut.setAnimationListener(new Animation.AnimationListener()
-        {
-            public void onAnimationEnd(Animation animation)
-            {
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
                 img.setVisibility(View.INVISIBLE);
             }
-            public void onAnimationRepeat(Animation animation) {}
-            public void onAnimationStart(Animation animation) {}
+
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            public void onAnimationStart(Animation animation) {
+            }
         });
 
         img.startAnimation(fadeOut);
@@ -182,13 +183,14 @@ public class NetworkScan extends AppCompatActivity {
         alertDialog.show();
 
         yesBtn.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("ApplySharedPref")
             @Override
             public void onClick(View v) {
                 Log.i("Dialog", "YesBtn clicked!");
                 alertDialog.dismiss();
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString(IP_ADDRESS,((TextView) ip).getText().toString());
-                editor.apply();
+                editor.putString(IP_ADDRESS, ((TextView) ip).getText().toString());
+                editor.commit();
 
 //                writeFile(((TextView) ip).getText().toString()); //confirm and write address to memory
                 MessageSender messageSender = new MessageSender();  // todo insert basicSender here
@@ -263,6 +265,7 @@ public class NetworkScan extends AppCompatActivity {
             }
         }
 
+        // todo split across 2 threads, increase timeout
         protected Void doInBackground(String... ipBase) {     //check all available ip addresses for open port 55056
             if (isCancelled()) {
                 return null;

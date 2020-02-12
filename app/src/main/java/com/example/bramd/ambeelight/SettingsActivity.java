@@ -7,6 +7,7 @@ import android.preference.EditTextPreference;
 import android.preference.PreferenceActivity;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 
 /**
@@ -25,6 +26,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public static final String IP_ADDRESS = "ipAddress";
     public static final String IP_ADDRESS_DEFAULT = "192.168.4.1";
 
+    EditTextPreference setIpTextPref;
+    SharedPreferences prefs;
+
     SharedPreferences.OnSharedPreferenceChangeListener myPrefListner;
 
     @Override
@@ -33,7 +37,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         setupActionBar();
         addPreferencesFromResource(R.xml.activity_settings);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         myPrefListner = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -41,20 +45,24 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     EditTextPreference setIpTextPref = (EditTextPreference) findPreference(key);
                     setIpTextPref.setSummary(prefs.getString(key, "no value set"));
                 }
+                Log.i("Settings myPrefListener","triggered!");
             }
         };
-
+        prefs.registerOnSharedPreferenceChangeListener(myPrefListner);
 
         // set initial summary for ipAddress textpref
-        EditTextPreference setIpTextPref = (EditTextPreference) findPreference(IP_ADDRESS);
+        setIpTextPref = (EditTextPreference) findPreference(IP_ADDRESS);
         setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
         // re attach listener to editable fields
+        Log.i("Settings","Resumed!");
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(myPrefListner);
+        setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
     }
 
 
@@ -63,6 +71,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onPause();
         // re attach listener to editable fields
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(myPrefListner);
+        setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
 
     }
 
