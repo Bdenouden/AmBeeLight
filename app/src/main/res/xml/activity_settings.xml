@@ -26,7 +26,7 @@
         android:summary="Click to start the networks scanner in order to find available AmBeelights">
         <intent
             android:action=         "com.example.bramd.ambeelight.SETTING_START_ACTIVITY"
-            android:targetClass=    "com.example.bramd.ambeelight.networkScan"
+            android:targetClass=    "com.example.bramd.ambeelight.NetworkScan"
             android:targetPackage=  "com.example.bramd.ambeelight"/>
     </Preference>
 

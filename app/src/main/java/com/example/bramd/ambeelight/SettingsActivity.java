@@ -33,7 +33,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         setupActionBar();
         addPreferencesFromResource(R.xml.activity_settings);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         myPrefListner = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {

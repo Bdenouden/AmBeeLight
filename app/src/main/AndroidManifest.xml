@@ -41,8 +41,8 @@
         </activity>
 
         <activity
-            android:name=".networkScan"
-            android:label="networkScan"
+            android:name=".NetworkScan"
+            android:label="NetworkScan"
             android:parentActivityName=".SettingsActivity">
 
         </activity>

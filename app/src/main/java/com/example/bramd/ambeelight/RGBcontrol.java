@@ -48,9 +48,6 @@ public class RGBcontrol extends AppCompatActivity {
     private FloatingActionButton FAB;
 
 
-//    SharedPreferences prefs; //todo shared prefs from menu
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -215,7 +212,7 @@ public class RGBcontrol extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) {
                 return;
             }
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
 
             activity.sendProgressBar.setVisibility(View.VISIBLE);
             activity.FAB.hide();
@@ -286,7 +283,7 @@ public class RGBcontrol extends AppCompatActivity {
                 Toast.makeText(activity, "Could not send to " + ipAddress + " Last error can be found under 'info'", Toast.LENGTH_LONG).show();
 
                 // set last exception info_last_exception
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("info_last_exception", ret.error.toString());
                 editor.apply();
