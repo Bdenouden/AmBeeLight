@@ -38,11 +38,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 //import java.io.FileOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class NetworkScan extends AppCompatActivity {
     public static final String IP_ADDRESS = "ipAddress";
@@ -58,7 +60,6 @@ public class NetworkScan extends AppCompatActivity {
     AnimatedVectorDrawable avd2;
 
     SharedPreferences prefs;
-
 
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -156,13 +157,12 @@ public class NetworkScan extends AppCompatActivity {
 
     //user clicked on one of the found ip addresses
     public void onIpClick(View v) {
-        String ip = ((TextView) v).getText().toString();
+        String selectedIp = ((TextView) v).getText().toString();
         Log.i("Scanner", "IP adress clicked!");
-        Log.i("Scanner", ip);
-        MessageSender messageSender = new MessageSender(); // todo remove messageSender
-        senderParams.targetIp = ip;                                                                   //write green blink to ambeelight
-        senderParams.colordata = new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0xff, (byte) 0x00, (byte) 0x53, (byte) 0xff};
-        messageSender.execute();
+        Log.i("Scanner", selectedIp);
+
+        byte[] message = new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0xff, (byte) 0x00, (byte) 0x53, (byte) 0xff};
+        new BasicSender(selectedIp).execute(message);
         showDialog(v);
     }
 
@@ -189,32 +189,31 @@ public class NetworkScan extends AppCompatActivity {
                 Log.i("Dialog", "YesBtn clicked!");
                 alertDialog.dismiss();
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString(IP_ADDRESS, ((TextView) ip).getText().toString());
+                String newTargetIp = ((TextView) ip).getText().toString();
+                editor.putString(IP_ADDRESS, newTargetIp);
                 editor.commit();
 
-//                writeFile(((TextView) ip).getText().toString()); //confirm and write address to memory
-                MessageSender messageSender = new MessageSender();  // todo insert basicSender here
-                senderParams.colordata = new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0x00, (byte) 0x00};
-                messageSender.execute();
-//                RGBcontrol.showSnackbar("AmBeeLight found!",Snackbar.LENGTH_SHORT);
+                byte[] message = new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+                new BasicSender(newTargetIp).execute(message);
+
                 //finishing this activity will redirect to it's parent, in this case the settings page
                 finish();
-
             }
         });
-
 
         noBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.i("Dialog", "noBtn clicked!");
+                String newTargetIp = ((TextView) ip).getText().toString();
+                byte[] message = new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+                new BasicSender(newTargetIp).execute(message);
                 alertDialog.dismiss();
-                MessageSender messageSender = new MessageSender();
-                senderParams.colordata = new byte[]{(byte) 0x43, (byte) 0x00, (byte) 0x00, (byte) 0x00};
-                messageSender.execute();
             }
         });
     }
+
+
 
     public void scanBtnClicked(View v) {
         Log.i("ScanBtnClicked", "The 'Scan' button has been clicked!");
@@ -236,7 +235,6 @@ public class NetworkScan extends AppCompatActivity {
 
     private static class PortCheck extends AsyncTask<String, ProgressVariables, Void> {
         private WeakReference<NetworkScan> activityWeakReference;
-//        private String ipAddress;
 
         PortCheck(NetworkScan activity) {
             activityWeakReference = new WeakReference<>(activity);
@@ -249,9 +247,6 @@ public class NetworkScan extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) {
                 return;
             }
-//            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-//            ipAddress = prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT);
-
 
             if (!activity.wifiCheck()) {
                 cancel(true);
@@ -275,7 +270,6 @@ public class NetworkScan extends AppCompatActivity {
                 progVar.index = i;
                 Socket socket = new Socket();
                 try {
-//                    Socket socket = new Socket();
                     socket.connect(new InetSocketAddress(ipBase[0] + i, 55056), 100);
                     socket.close();
                     String targetIp = ipBase[0] + i;
@@ -306,7 +300,7 @@ public class NetworkScan extends AppCompatActivity {
             activity.progressBar_Bottom.setProgress(progVar.index);
             if (progVar.foundIp != null) {
                 Log.i("NetworkScan", "Success! connected to " + progVar.foundIp);
-                activity.mAdapter.notifyDataSetChanged();
+//                activity.mAdapter.notifyDataSetChanged(); // todo port is blocked during sending, confirmation has to wait until the scan is finished
             }
         }
 
@@ -333,6 +327,33 @@ public class NetworkScan extends AppCompatActivity {
     }
 
 
+
+    private static class BasicSender extends AsyncTask<byte[], Void, Void> {
+        private String ipAddress ;
+        private Socket s = new Socket();
+
+        BasicSender(String targetIp) {
+            ipAddress = targetIp.replaceAll(" ", "");
+        }
+
+        @Override
+        protected Void doInBackground(byte[]... bytes) {
+            byte[] message = bytes[0];
+            Log.i("Basic Sender", "Target ip = " + ipAddress);
+            Log.i("Basic sender", "Message = " + Arrays.toString(message));
+            try {
+                s.connect(new InetSocketAddress(ipAddress, 55056), 200);
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                dos.write(message);
+                s.close();
+                Log.i("Basic sender", "Successfully send to AmBeeLight!");
+            } catch (IOException e) {
+//                e.printStackTrace();
+                Log.i("Basic sender", "Could not send to AmBeeLight!");
+            }
+            return null;
+        }
+    }
 }
 
 

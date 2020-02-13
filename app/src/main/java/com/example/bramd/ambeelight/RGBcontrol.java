@@ -229,7 +229,7 @@ public class RGBcontrol extends AppCompatActivity {
             Log.i("Basic Sender", "Target ip = " + ipAddress);
             Log.i("Basic sender", "Message = " + Arrays.toString(message));
             try {
-                s.connect(new InetSocketAddress(ipAddress, 55056), 1000);
+                s.connect(new InetSocketAddress(ipAddress, 55056), 5000);
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                 dos.write(message);
                 s.close();
@@ -250,16 +250,6 @@ public class RGBcontrol extends AppCompatActivity {
             return returnParams;
         }
 
-//        @Override
-//        protected void onProgressUpdate(Integer... values) {
-//            super.onProgressUpdate(values);
-//
-//            RGBcontrol activity = activityWeakReference.get();
-//            if (activity == null || activity.isFinishing()) {
-//                return;
-//            }
-//        }
-
         @Override
         protected void onPostExecute(ReturnParams ret) {
             super.onPostExecute(ret);
@@ -276,7 +266,6 @@ public class RGBcontrol extends AppCompatActivity {
             activity.sendProgressBar.setVisibility(View.INVISIBLE);
             activity.FAB.show();
 
-
             if (ret.success) {
                 Toast.makeText(activity, "Send to ambeelight", Toast.LENGTH_SHORT).show();
             } else {
@@ -287,7 +276,6 @@ public class RGBcontrol extends AppCompatActivity {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("info_last_exception", ret.error.toString());
                 editor.apply();
-
             }
         }
     }

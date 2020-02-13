@@ -61,7 +61,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onResume();
         // re attach listener to editable fields
         Log.i("Settings","Resumed!");
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(myPrefListner);
+//        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(myPrefListner);
         setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
     }
 
@@ -70,7 +70,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onPause() {
         super.onPause();
         // re attach listener to editable fields
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(myPrefListner);
+//        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(myPrefListner);
         setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
 
     }
