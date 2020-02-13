@@ -1,28 +1,14 @@
 package com.example.bramd.ambeelight;
 
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.Intent;
+
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
+import android.preference.EditTextPreference;
 import android.preference.PreferenceActivity;
 import android.support.v7.app.ActionBar;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
-import android.view.MenuItem;
+import android.util.Log;
 
-import com.example.bramd.ambeelight.R;
-
-import java.util.List;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -37,12 +23,58 @@ import java.util.List;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
+    public static final String IP_ADDRESS = "ipAddress";
+    public static final String IP_ADDRESS_DEFAULT = "192.168.4.1";
+
+    EditTextPreference setIpTextPref;
+    SharedPreferences prefs;
+
+    SharedPreferences.OnSharedPreferenceChangeListener myPrefListner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
         addPreferencesFromResource(R.xml.activity_settings);
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        myPrefListner = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                if (findPreference(key) instanceof EditTextPreference) {
+                    EditTextPreference setIpTextPref = (EditTextPreference) findPreference(key);
+                    setIpTextPref.setSummary(prefs.getString(key, "no value set"));
+                }
+                Log.i("Settings myPrefListener","triggered!");
+            }
+        };
+        prefs.registerOnSharedPreferenceChangeListener(myPrefListner);
+
+        // set initial summary for ipAddress textpref
+        setIpTextPref = (EditTextPreference) findPreference(IP_ADDRESS);
+        setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // re attach listener to editable fields
+        Log.i("Settings","Resumed!");
+//        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(myPrefListner);
+        setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // re attach listener to editable fields
+//        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(myPrefListner);
+        setIpTextPref.setSummary(prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT));
+
+    }
+
 
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.

@@ -5,7 +5,9 @@
     android:layout_height="match_parent"
     tools:context=".infoActivity"
     android:orientation="vertical"
-    tools:ignore="HardcodedText">
+    tools:ignore="HardcodedText"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp">
     <!--remove hardcoded text if string resources are used instead-->
 
     <TextView
@@ -30,11 +32,17 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Info"
+        android:text="Debug info"
         android:layout_marginTop="16dp"
         android:textSize="32sp"
         android:textColor="#000000"
         tools:layout_editor_absoluteX="30dp"
         tools:layout_editor_absoluteY="13dp" />
+
+    <TextView
+        android:id="@+id/info_last_error_field"
+        android:layout_width="match_parent"
+        android:layout_height="165dp"
+        android:text="TextView" />
 
 </LinearLayout>

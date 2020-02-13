@@ -47,6 +47,7 @@
         android:layout_marginRight="-1dp"
         android:text="OFF"
         android:textSize="20sp"
+        android:onClick="offBtnClicked"
         tools:ignore="HardcodedText" />
 
     <!--Red-->

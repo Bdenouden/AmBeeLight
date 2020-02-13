@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,20 +18,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-
-import static android.support.v4.content.ContextCompat.getSystemService;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.Arrays;
+import java.util.logging.SocketHandler;
 
 public class RGBcontrol extends AppCompatActivity {
-    private static View anchor;
+
+    public static final String IP_ADDRESS = "ipAddress";
+    public static final String IP_ADDRESS_DEFAULT = "192.168.4.1";
+
     private SeekBar SBred;
     private SeekBar SBgreen;
     private SeekBar SBblue;
@@ -37,9 +44,8 @@ public class RGBcontrol extends AppCompatActivity {
     private TextView GText;
     private TextView BText;
     private ImageView colorShow;
-
-
-    SharedPreferences prefs; //todo rave en stobo seekbar toevoegen
+    private ProgressBar sendProgressBar;
+    private FloatingActionButton FAB;
 
 
     @Override
@@ -49,58 +55,20 @@ public class RGBcontrol extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //todo implement this---
-        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
-        Log.i("preferences", String.valueOf(prefs.getBoolean("raveToggle",false )));
-        //----
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-
         RText = findViewById(R.id.RText);
         GText = findViewById(R.id.GText);
         BText = findViewById(R.id.BText);
         SBred = findViewById(R.id.SBred);
         SBgreen = findViewById(R.id.SBgreen);
-        SBblue  = findViewById(R.id.SBblue);
+        SBblue = findViewById(R.id.SBblue);
         colorShow = findViewById(R.id.colorShow);
-        Button offBtn = findViewById(R.id.offBtn);
+        sendProgressBar = findViewById(R.id.send_progress_bar);
+        FAB = findViewById(R.id.fab);
 
-        anchor = this.findViewById(R.id.anchor); //must be declared before getIP() is called!!!
-        getIp();
-
+//        anchor = this.findViewById(R.id.anchor); //must be declared before getIP() is called!!!
         SBred.setMax(255);
         SBgreen.setMax(255);
         SBblue.setMax(255);
-
-//        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-//        final NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-//        Log.i("NETWORKINFO","wifi.isConnected = " + mWifi.isConnected());
-        wifiCheck();    //TODO toggle voor wificheck invoegen
-
-        //off button
-        offBtn.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){
-                SBred.setProgress(0);
-                SBgreen.setProgress(0);
-                SBblue.setProgress(0);
-                MessageSender messageSender = new MessageSender();
-                byte [] message = {(byte)0x43, (byte)SBred.getProgress(), (byte)SBgreen.getProgress(), (byte)SBblue.getProgress()};
-                getIp(); //problem?
-                senderParams.colordata = message;
-
-                //wifi check and sending data
-                if(wifiCheck()){
-                    messageSender.execute();
-                    Snackbar.make(v,"Data send to AmBeeLight!" , Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-                else {//and me
-                    Snackbar.make(v,"Please connect to wifi!" , Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }//and me
-            }
-        });
-
 
         //seekbar red color
         SBred.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -108,14 +76,17 @@ public class RGBcontrol extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 RText.setText("Red: " + progress);
-                colorShow.setBackgroundColor(Color.rgb( progress, SBgreen.getProgress() ,SBblue.getProgress() ));
+                colorShow.setBackgroundColor(Color.rgb(progress, SBgreen.getProgress(), SBblue.getProgress()));
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
             }
+
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
         //seekbar green color
@@ -123,15 +94,17 @@ public class RGBcontrol extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                GText.setText("Green: "+ progress);
-                colorShow.setBackgroundColor(Color.rgb( SBred.getProgress(), progress ,SBblue.getProgress() ));
+                GText.setText("Green: " + progress);
+                colorShow.setBackgroundColor(Color.rgb(SBred.getProgress(), progress, SBblue.getProgress()));
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
         //seekbar blue color
@@ -140,7 +113,7 @@ public class RGBcontrol extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 BText.setText("Blue: " + progress);
-                colorShow.setBackgroundColor(Color.rgb( SBred.getProgress(), SBgreen.getProgress() ,progress ));
+                colorShow.setBackgroundColor(Color.rgb(SBred.getProgress(), SBgreen.getProgress(), progress));
             }
 
             @Override
@@ -153,43 +126,40 @@ public class RGBcontrol extends AppCompatActivity {
 
             }
         });
-
-//        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MessageSender messageSender = new MessageSender();
-                byte [] message = {(byte)0x43, (byte)SBred.getProgress(), (byte)SBgreen.getProgress(), (byte)SBblue.getProgress()};
-                getIp();
-                senderParams.colordata = message;
-                if(wifiCheck()){
-                    messageSender.execute();
-                    Snackbar.make(view,"Data send to AmBeeLight!" , Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-                else {
-                    Snackbar.make(view,"Please connect to wifi!" , Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-            }
-        });
     }
 
-    Boolean wifiCheck(){
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        Log.i("NETWORKINFO","wifi.isConnected = " + mWifi.isConnected());
-        return mWifi.isConnected();
+    public void offBtnClicked(View v) {
+        SBred.setProgress(0);
+        SBblue.setProgress(0);
+        SBgreen.setProgress(0);
+        sendCurrentSBValues(v);
     }
 
-    public static void showSnackbar(String message, int length) {
-        Snackbar.make(anchor,message, length)
-                .setAction("action", null)
-                .show();
+    public void sendCurrentSBValues(View v) {
+//        Toast.makeText(this, "sending....", Toast.LENGTH_SHORT);
+        byte[] message = {(byte) 0x43, (byte) SBred.getProgress(), (byte) SBgreen.getProgress(), (byte) SBblue.getProgress()};
 
-
+        if (wifiCheck()) {
+            BasicSender sender = new BasicSender(this);
+            sender.execute(message);
+            Log.i("testBasicSender", "wifi check successful");
+        } else {
+            Snackbar.make(v, "Please connect to wifi!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
     }
 
+
+    private boolean wifiCheck() {
+        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+            return wifiInfo.getNetworkId() != -1; // return false if not connected to an access point
+        } else {
+            return false; // Wi-Fi adapter is OFF
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -209,9 +179,8 @@ public class RGBcontrol extends AppCompatActivity {
             Intent intent = new Intent(RGBcontrol.this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        }
-        else if (id==R.id.information){
-            Log.i("Menu","Information selected");
+        } else if (id == R.id.information) {
+            Log.i("Menu", "Information selected");
             Intent intent = new Intent(RGBcontrol.this, infoActivity.class);
             startActivity(intent);
         }
@@ -219,42 +188,96 @@ public class RGBcontrol extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    void getIp() {
-        Log.i("PING!","getIP PING");
-        try {
-            FileInputStream fileInputStream = openFileInput("targetIp_file");
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
 
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuilder stringBuffer = new StringBuilder();
+    private static class ReturnParams{
+        private boolean success;
+        private IOException error = null;
+    }
 
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuffer.append(line);
+    private static class BasicSender extends AsyncTask<byte[], Integer, ReturnParams> {
+        private WeakReference<RGBcontrol> activityWeakReference;
+        private String ipAddress = "";
+        private Socket s = new Socket();
+
+
+        BasicSender(RGBcontrol activity) {
+            activityWeakReference = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected void onPreExecute() { // get ip from shared pref
+            super.onPreExecute();
+
+            RGBcontrol activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing()) {
+                return;
             }
-            Log.i("FILE","targetIp = "+stringBuffer.toString());
-            senderParams.targetIp = stringBuffer.toString();
-            Log.i("FILE","targetIp = "+senderParams.targetIp);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
+
+            activity.sendProgressBar.setVisibility(View.VISIBLE);
+            activity.FAB.hide();
+
+            ipAddress = prefs.getString(IP_ADDRESS, IP_ADDRESS_DEFAULT);
+            if(ipAddress != null){
+                ipAddress = ipAddress.replaceAll(" ","");
+            }
         }
-        catch (FileNotFoundException e){
-            Log.e("FILE", "FILE NOT FOUND");
-            senderParams.targetIp = "192.168.1.0";   //fallback IP to prevent error
-            showSnackbar("Please go to settings first!",Snackbar.LENGTH_INDEFINITE);
+
+        @Override
+        protected ReturnParams doInBackground(byte[]... bytes) {
+            byte[] message = bytes[0];
+            Log.i("Basic Sender", "Target ip = " + ipAddress);
+            Log.i("Basic sender", "Message = " + Arrays.toString(message));
+            try {
+                s.connect(new InetSocketAddress(ipAddress, 55056), 5000);
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                dos.write(message);
+                s.close();
+                Log.i("Basic sender", "Successfully send to AmBeeLight!");
+            } catch (IOException e) {
+//                e.printStackTrace();
+                Log.i("Basic sender", "Could not send to AmBeeLight!");
+
+                ReturnParams returnParams = new ReturnParams();
+                returnParams.success = Boolean.FALSE;
+                returnParams.error = e;
+                return returnParams;
+            }
+
+            ReturnParams returnParams = new ReturnParams();
+            returnParams.success = Boolean.TRUE;
+
+            return returnParams;
         }
-        catch (Exception e) {
-            Log.e("FILE", "no valid ip loaded from memory");
-            senderParams.targetIp = "192.168.1.0";   //fallback IP to prevent error
-            showSnackbar("Something went wrong, please tell Bram!",Snackbar.LENGTH_INDEFINITE);
+
+        @Override
+        protected void onPostExecute(ReturnParams ret) {
+            super.onPostExecute(ret);
+            try {
+                s.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            RGBcontrol activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing()) {
+                return;
+            }
+            activity.sendProgressBar.setVisibility(View.INVISIBLE);
+            activity.FAB.show();
+
+            if (ret.success) {
+                Toast.makeText(activity, "Send to ambeelight", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(activity, "Could not send to " + ipAddress + " Last error can be found under 'info'", Toast.LENGTH_LONG).show();
+
+                // set last exception info_last_exception
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("info_last_exception", ret.error.toString());
+                editor.apply();
+            }
         }
     }
 }
 
-class senderParams {
-    static byte [] colordata;
-    static String targetIp = "192.168.1.0"; //fallback IP address
-
-    senderParams(String target, byte [] colorDataIn){
-        colordata=colorDataIn;
-        targetIp=target;
-    }
-}

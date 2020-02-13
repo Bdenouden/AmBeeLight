@@ -12,7 +12,9 @@
         android:layout_height="match_parent"
         android:layout_alignParentStart="false"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true" >
+
+    </android.support.design.widget.CoordinatorLayout>
 
 
 
@@ -39,6 +41,19 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        android:onClick="sendCurrentSBValues"
+        android:visibility="visible"
         app:srcCompat="@android:drawable/ic_dialog_email" />
+
+    <ProgressBar
+        android:id="@+id/send_progress_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_anchor="@+id/fab"
+        app:layout_anchorGravity="center"
+        tools:visibility="visible"
+        />
 
 </android.support.design.widget.CoordinatorLayout>
