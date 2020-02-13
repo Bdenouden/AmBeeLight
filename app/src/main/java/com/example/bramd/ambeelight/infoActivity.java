@@ -9,14 +9,12 @@ import android.widget.TextView;
 
 public class infoActivity extends AppCompatActivity {
 
-    private TextView errorField;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
         setContentView(R.layout.activity_info);
-        errorField = findViewById(R.id.info_last_error_field);
+        TextView errorField = findViewById(R.id.info_last_error_field);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 

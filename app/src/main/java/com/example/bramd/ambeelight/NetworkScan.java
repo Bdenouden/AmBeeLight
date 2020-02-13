@@ -48,7 +48,7 @@ import java.util.Arrays;
 
 public class NetworkScan extends AppCompatActivity {
     public static final String IP_ADDRESS = "ipAddress";
-    public static final String IP_ADDRESS_DEFAULT = "192.168.4.1";
+//    public static final String IP_ADDRESS_DEFAULT = "192.168.4.1";
 
     public String myIpAddress;
     public static ArrayList<String> addresses;
@@ -260,7 +260,6 @@ public class NetworkScan extends AppCompatActivity {
             }
         }
 
-        // todo split across 2 threads, increase timeout
         protected Void doInBackground(String... ipBase) {     //check all available ip addresses for open port 55056
             if (isCancelled()) {
                 return null;
