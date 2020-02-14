@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,24 +11,42 @@
     android:paddingRight="10dp">
     <!--remove hardcoded text if string resources are used instead-->
 
-    <TextView
+<!--    <TextView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:text="Manual"-->
+<!--        android:textSize="32sp"-->
+<!--        android:textColor="#000000"-->
+<!--        tools:layout_editor_absoluteX="30dp"-->
+<!--        tools:layout_editor_absoluteY="13dp" />-->
+
+<!--    <TextView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Step 1: "/>-->
+<!--    <TextView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Warning: \nwhen 'Yes' is pressed and the new ambeelight is confirmed, you won't be able to control any previous ambeelight until you scan again and select that one. "/>-->
+
+
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/ambeeLoading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Manual"
-        android:textSize="32sp"
-        android:textColor="#000000"
-        tools:layout_editor_absoluteX="30dp"
-        tools:layout_editor_absoluteY="13dp" />
+        android:contentDescription="ambee Loading"
+        app:srcCompat="@drawable/ambee_loading"
+        android:onClick="ambeeLoadingClicked"/>
 
     <TextView
+        android:id="@+id/copyright"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Step 1: "/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Warning: \nwhen 'Yes' is pressed and the new ambeelight is confirmed, you won't be able to control any previous ambeelight until you scan again and select that one. "/>
+        android:text="AmbeeLight V2\nBram den Ouden"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        android:textAlignment="center"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -42,7 +61,7 @@
     <TextView
         android:id="@+id/info_last_error_field"
         android:layout_width="match_parent"
-        android:layout_height="165dp"
+        android:layout_height="319dp"
         android:text="TextView" />
 
 </LinearLayout>
